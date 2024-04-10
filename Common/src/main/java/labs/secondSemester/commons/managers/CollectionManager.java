@@ -100,7 +100,7 @@ public class CollectionManager {
      */
     public static ArrayList<Dragon> getCollection() {
         if (collectionOfDragons == null) {
-            collectionOfDragons = new ArrayList<Dragon>();
+            collectionOfDragons = new ArrayList<>();
         }
         return collectionOfDragons;
     }

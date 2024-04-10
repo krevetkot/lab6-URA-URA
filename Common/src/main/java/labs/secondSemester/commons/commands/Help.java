@@ -13,7 +13,7 @@ import java.util.Scanner;
  * @author Kseniya
  */
 public class Help extends Command {
-    private CommandManager commandManager;
+    private final CommandManager commandManager;
 
     public Help(CommandManager commandManager) {
         super("help", "вывести справку по доступным командам", false);

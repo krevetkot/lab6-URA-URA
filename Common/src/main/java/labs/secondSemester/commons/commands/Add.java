@@ -1,12 +1,9 @@
 package labs.secondSemester.commons.commands;
 
-import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
-import labs.secondSemester.commons.managers.Console;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
-import labs.secondSemester.commons.objects.forms.DragonForm;
 
 import java.util.Collections;
 import java.util.Scanner;

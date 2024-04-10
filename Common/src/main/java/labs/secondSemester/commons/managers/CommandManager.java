@@ -16,7 +16,7 @@ public class CommandManager implements Serializable {
     /**
      * Коллекция команд, где ключ - название команды, значение - ссылка на экземпляр класса
      */
-    private LinkedHashMap<String, Command> commandMap;
+    private final LinkedHashMap<String, Command> commandMap;
 
     /**
      * Конструктор, в котором в коллекцию менеджера добавляются все доступные команды.

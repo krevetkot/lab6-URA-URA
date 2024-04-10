@@ -5,7 +5,6 @@ import labs.secondSemester.commons.commands.Exit;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
-import labs.secondSemester.commons.network.CommandFactory;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
 import labs.secondSemester.commons.objects.Dragon;
@@ -23,11 +22,11 @@ import java.util.Scanner;
 
 
 public class Client {
-    private DatagramChannel datagramChannel;
-    private InetSocketAddress serverAddress;
+    private final DatagramChannel datagramChannel;
+    private final InetSocketAddress serverAddress;
     private Selector selector;
-    private Serializer serializer;
-    private FileManager fileManager;
+    private final Serializer serializer;
+    private final FileManager fileManager;
 
     {
         selector = Selector.open();
@@ -42,7 +41,7 @@ public class Client {
     }
 
 
-    public void start() throws IOException {
+    public void start() {
 
         ByteBuffer buffer = ByteBuffer.allocate(10240);
         try {
@@ -72,7 +71,7 @@ public class Client {
             }
 
             try {
-                Command command = commandFactory.buildCommand(request, false);
+                Command command = commandFactory.buildCommand(request);
                 if (command.getClass().equals(Add.class) || command.getClass().equals(InsertAt.class) || command.getClass().equals(Update.class)){
                     DragonForm newDragon = new DragonForm();
                     try {
@@ -88,6 +87,7 @@ public class Client {
 
                 }
                 if (command.getClass().equals(ExecuteFile.class)){
+                    assert request != null;
                     fileManager.executeFile(request.trim().split(" ")[1]);
                     continue;
                 } else {
@@ -127,8 +127,7 @@ public class Client {
                 address = datagramChannel.receive(buffer);
             }
 
-            Response response = serializer.deserialize(buffer.array());
-            return response;
+            return serializer.deserialize(buffer.array());
         } catch (Exception e){
             System.out.println(e.getMessage());
             return  null;

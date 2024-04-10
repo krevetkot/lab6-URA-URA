@@ -21,11 +21,11 @@ public abstract class Command implements Serializable {
     /**
      * Название команды
      */
-    protected String name = "";
+    protected String name;
     /**
      * Описание команды
      */
-    protected String description = "";
+    protected String description;
     /**
      * Есть ли аргументы
      */
@@ -50,7 +50,7 @@ public abstract class Command implements Serializable {
     /**
      * Выполнение команды.
      *
-     * @return
+     * @return response
      * @throws IllegalValueException - при недопустимом аргументе
      */
     public abstract Response execute(String argument, boolean fileMode, Scanner scanner) throws IllegalValueException;

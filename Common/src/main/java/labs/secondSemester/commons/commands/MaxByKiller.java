@@ -6,7 +6,6 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -25,10 +24,7 @@ public class MaxByKiller extends Command {
         if (CollectionManager.getCollection().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {
-//            ArrayList<Dragon> dragons = CollectionManager.getCollection();
-            ArrayList<Dragon> dragons = new ArrayList<>(CollectionManager.getCollection().stream().filter(x -> x.getKiller() != null).collect(Collectors.toList()));
-
-            Collections.sort(dragons, (d1, d2) -> Long.valueOf(d1.getKiller().getCountKilledDragons() - d2.getKiller().getCountKilledDragons()).intValue());
+            ArrayList<Dragon> dragons = CollectionManager.getCollection().stream().filter(x -> x.getKiller() != null).sorted((d1, d2) -> Long.valueOf(d1.getKiller().getCountKilledDragons() - d2.getKiller().getCountKilledDragons()).intValue()).collect(Collectors.toCollection(ArrayList::new));
 
             return new Response(dragons.get(dragons.size()-1).toString());
         }

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 @Getter
 public class Response implements Serializable {
-    private ArrayList<String> response;
+    private final ArrayList<String> response;
 
     public Response(){
         response = new ArrayList<>();

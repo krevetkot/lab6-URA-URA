@@ -1,26 +1,22 @@
 package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
-import labs.secondSemester.commons.commands.Save;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
-import labs.secondSemester.commons.managers.RuntimeManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.Scanner;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 public class Server {
     private final int PORT = 2224;
-    private DatagramSocket datagramSocket;
-    private Serializer serializer;
-    private RuntimeManager runtimeManager;
+    private final DatagramSocket datagramSocket;
+    private final Serializer serializer;
+    private final RuntimeManager runtimeManager;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
@@ -38,28 +34,21 @@ public class Server {
         byte[] buffer = new byte[10240];
         logger.info("Создание DatagramPacket.");
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
-        while(true){
-
+        while (true) {
             Response response = null;
             try {
-
-
                 logger.info("Чтение запроса.");
                 Command command = readRequest(datagramPacket, buffer);
 
                 logger.info("Обработка команды и выполнение.");
                 response = runtimeManager.commandProcessing(command, false, null);
-
-
-            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException e){
+            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
                 response = new Response(e.getMessage());
                 logger.error(e.getMessage());
-            }
-            finally {
+            } finally {
                 logger.info("Отправка ответа.");
                 sendResponce(response, datagramPacket.getSocketAddress());
             }
-
         }
     }
 
@@ -73,7 +62,6 @@ public class Server {
         datagramSocket.receive(datagramPacket);
         return serializer.deserialize(buffer);
     }
-
 
 
 }

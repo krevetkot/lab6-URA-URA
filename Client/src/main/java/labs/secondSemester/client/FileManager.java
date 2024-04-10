@@ -7,7 +7,6 @@ import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
 import labs.secondSemester.commons.managers.ScriptManager;
-import labs.secondSemester.commons.network.CommandFactory;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
@@ -47,7 +46,7 @@ public class FileManager {
                 try {
                     CommandFactory commandFactory = new CommandFactory();
 
-                    Command scriptCommand = commandFactory.buildCommand(line, true);
+                    Command scriptCommand = commandFactory.buildCommand(line);
                     if (scriptCommand.getName().equals("add") || scriptCommand.getName().equals("insert_at") || scriptCommand.getName().equals("update")) {
                         DragonForm newDragon = new DragonForm();
                         try {

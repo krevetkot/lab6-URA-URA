@@ -1,4 +1,4 @@
-package labs.secondSemester.commons.managers;
+package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
@@ -12,10 +12,6 @@ import java.util.Scanner;
  * @author Kseniya
  */
 public class RuntimeManager {
-    /**
-     * Менеджер команд
-     */
-    private static CommandManager commandManager;
 
 
     /**
@@ -40,10 +36,4 @@ public class RuntimeManager {
             }
         }
     }
-
-
-
-
-
-
 }

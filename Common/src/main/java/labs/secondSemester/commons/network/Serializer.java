@@ -18,10 +18,10 @@ public class Serializer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] buffer) {
         try (ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(buffer))) {
-            T object = (T) inputStream.readObject();
-            return object;
+            return (T) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

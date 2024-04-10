@@ -9,13 +9,14 @@ import java.io.Serializable;
  *
  * @author Kseniya
  */
+
+@Getter
 public enum DragonType implements Serializable {
     WATER("WATER"),
     UNDERGROUND("UNDERGROUND"),
     AIR("AIR"),
     FIRE("FIRE");
 
-    @Getter
     private final String name;
 
     DragonType(String name) {
