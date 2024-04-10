@@ -86,7 +86,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.6.3</version>
                 <configuration>
-                    <sourcepath>Client/src/main/java</sourcepath>
+                    <sourcepath>src/main/java</sourcepath>
                 </configuration>
             </plugin>
 
@@ -102,7 +102,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>Client.src.main.java.labs.secondSemester.client.Main</mainClass>
+                            <mainClass>labs.secondSemester.client.Main</mainClass>
                         </manifest>
                     </archive>
 

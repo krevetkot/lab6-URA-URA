@@ -54,7 +54,6 @@ public class Client {
             System.exit(0);
         }
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
-//как проверить, что мы реально подключены к серверу?
 
         CommandFactory commandFactory = new CommandFactory();
         while (true){
@@ -86,6 +85,7 @@ public class Client {
 
                 if (command.getClass().equals(Exit.class)){
                     command.execute(null, false, null);
+
                 }
                 if (command.getClass().equals(ExecuteFile.class)){
                     fileManager.executeFile(request.trim().split(" ")[1]);

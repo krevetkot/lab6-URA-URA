@@ -82,6 +82,7 @@
             <artifactId>log4j-core</artifactId>
             <version>2.12.0</version>
         </dependency>
+
         <dependency>
             <groupId>labs.secondSemester</groupId>
             <artifactId>Common</artifactId>
@@ -100,7 +101,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.6.3</version>
                 <configuration>
-                    <sourcepath>Server/src/main/java</sourcepath>
+                    <sourcepath>src/main/java</sourcepath>
                 </configuration>
             </plugin>
 
@@ -116,7 +117,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>Server.src.main.java.labs.secondSemester.server.Main</mainClass>
+                            <mainClass>labs.secondSemester.server.Main</mainClass>
                         </manifest>
                     </archive>
 
