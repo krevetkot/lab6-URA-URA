@@ -98,7 +98,8 @@ public class Client {
                 continue;
             }
 
-            Response response = receive(buffer);
+            ByteBuffer responseBuffer = ByteBuffer.allocate(10000);
+            Response response = receive(responseBuffer);
             for (String element: response.getResponse()){
                 System.out.println(element);
             }
@@ -109,15 +110,18 @@ public class Client {
 
     public void send(Command command){
         try {
+            Header header = new Header(0, 0);
+            int headerLength = serializer.serialize(header).length + 200;
+
             byte[] buffer = serializer.serialize(command);
             int bufferLength = buffer.length;
-            int countOfPieces = bufferLength/BUFFER_LENGTH;
-            if (countOfPieces*BUFFER_LENGTH<bufferLength){
+            int countOfPieces = bufferLength/(BUFFER_LENGTH-headerLength);
+            if (countOfPieces*(BUFFER_LENGTH-headerLength) < bufferLength){
                 countOfPieces += 1;
             }
             for (int i=0; i<countOfPieces; i++){
-                Header header = new Header(countOfPieces, i);
-                int headerLength = serializer.serialize(header).length + 200;
+                header = new Header(countOfPieces, i);
+                headerLength = serializer.serialize(header).length + 200;
                 Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
                 datagramChannel.send(ByteBuffer.wrap(serializer.serialize(packet)), serverAddress);
 
@@ -136,15 +140,9 @@ public class Client {
         buffer.flip();
         try {
             SocketAddress address = null;
-            int time = 0;
             while (!serverAddress.equals(address)) {
-                if (time==100000){
-                    System.out.println("Кажется, сервер недоступен, приходите позже.");
-                    System.exit(0);
-                }
                 buffer.clear();
                 address = datagramChannel.receive(buffer);
-                time += 1;
             }
 
             return serializer.deserialize(buffer.array());
