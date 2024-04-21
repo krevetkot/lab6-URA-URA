@@ -1,10 +1,7 @@
 package labs.secondSemester.commons.network;
 
-import lombok.Getter;
-
 import java.io.*;
 
-@Getter
 public class Serializer {
 
 

@@ -29,7 +29,7 @@ public class Main {
             System.out.println("Файл поврежден. Не удалось загрузить коллекцию.");
             System.exit(1);
         } catch (Exception e) {
-            System.out.println("Не удалось загрузить коллекцию.");
+            System.out.println(e.getMessage());
             System.exit(1);
         }
     }

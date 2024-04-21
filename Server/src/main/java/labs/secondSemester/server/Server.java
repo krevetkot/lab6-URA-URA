@@ -9,7 +9,6 @@ import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -23,7 +22,7 @@ public class Server {
     private final DatagramSocket datagramSocket;
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
-    private final int BUFFER_LENGTH = 10240;
+    private final int BUFFER_LENGTH = 1000;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
@@ -38,7 +37,7 @@ public class Server {
 
     public void start() throws IOException {
         logger.info("Запуск сервера.");
-        byte[] buffer = new byte[10240];
+        byte[] buffer = new byte[BUFFER_LENGTH];
         logger.info("Создание DatagramPacket.");
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
         while (true) {
@@ -86,9 +85,9 @@ public class Server {
             //как-то нужно сделать так, что если мы слишком долго ждем, лавочка сама прикрывалась
         }
 
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream((countOfPieces+1)*BUFFER_LENGTH)) {
             for (int i = 0; i < countOfPieces; i++) {
-                byteStream.write(list.get(i).getPieceOfBuffer(), i * lengthOfBytes, lengthOfBytes);
+                byteStream.write(list.get(i).getPieceOfBuffer());
             }
             return serializer.deserialize(byteStream.toByteArray());
         } catch (Exception e){

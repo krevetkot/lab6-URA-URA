@@ -29,7 +29,7 @@ public class Client {
     private final Serializer serializer;
     private final FileManager fileManager;
     private final String ip;
-    private final int BUFFER_LENGTH = 10240;
+    private final int BUFFER_LENGTH = 1000;
 
     {
         selector = Selector.open();
@@ -44,29 +44,13 @@ public class Client {
         this.ip = ip;
     }
 
-    public void connectServer(int connectionTries){
-        try {
-            serverAddress = new InetSocketAddress(ip, 2224);
-            datagramChannel.configureBlocking(false);
-            datagramChannel.register(selector, SelectionKey.OP_READ);
-            System.out.println("Подключение к серверу налажено.");
-        } catch (IOException e){
-            connectionTries += 1;
-            if (connectionTries<3){
-                System.out.println("Переподключаемся...");
-                connectServer(connectionTries);
-            } else {
-                System.out.println("Кажется, барахлит подключение к серверу. Попробуйте позже.");
-                System.exit(0);
-            }
-        }
-    }
+
 
 
     public void start() {
 
         connectServer(0);
-        ByteBuffer buffer = ByteBuffer.allocate(10240);
+        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
         CommandFactory commandFactory = new CommandFactory();
@@ -123,30 +107,20 @@ public class Client {
     }
 
 
-//    public void send(Command command){
-//        try {
-//            datagramChannel.send(ByteBuffer.wrap(serializer.serialize(command)), serverAddress);
-//        }
-//        catch (IOException e){
-//            System.out.println(e.getMessage());
-//        }
-//    }
-
-
     public void send(Command command){
         try {
             byte[] buffer = serializer.serialize(command);
             int bufferLength = buffer.length;
-            int countOfPieces = bufferLength/BUFFER_LENGTH-100;
+            int countOfPieces = bufferLength/BUFFER_LENGTH;
             if (countOfPieces*BUFFER_LENGTH<bufferLength){
                 countOfPieces += 1;
             }
             for (int i=0; i<countOfPieces; i++){
                 Header header = new Header(countOfPieces, i);
-                int headerLength = serializer.serialize(header).length;
-                System.out.println(headerLength);
-                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), (i+1)*(BUFFER_LENGTH-headerLength)));
+                int headerLength = serializer.serialize(header).length + 200;
+                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
                 datagramChannel.send(ByteBuffer.wrap(serializer.serialize(packet)), serverAddress);
+
             }
 
         }
@@ -162,10 +136,15 @@ public class Client {
         buffer.flip();
         try {
             SocketAddress address = null;
+            int time = 0;
             while (!serverAddress.equals(address)) {
+                if (time==100000){
+                    System.out.println("Кажется, сервер недоступен, приходите позже.");
+                    System.exit(0);
+                }
                 buffer.clear();
-                selector.select();
                 address = datagramChannel.receive(buffer);
+                time += 1;
             }
 
             return serializer.deserialize(buffer.array());
@@ -174,6 +153,24 @@ public class Client {
             return  null;
         }
 
+    }
+
+    public void connectServer(int connectionTries){
+        try {
+            serverAddress = new InetSocketAddress(ip, 2224);
+            datagramChannel.configureBlocking(false);
+            datagramChannel.register(selector, SelectionKey.OP_READ);
+            System.out.println("Подключение к серверу налажено.");
+        } catch (IOException e){
+            connectionTries += 1;
+            if (connectionTries<3){
+                System.out.println("Переподключаемся...");
+                connectServer(connectionTries);
+            } else {
+                System.out.println("Кажется, барахлит подключение к серверу. Попробуйте позже.");
+                System.exit(0);
+            }
+        }
     }
 
 
