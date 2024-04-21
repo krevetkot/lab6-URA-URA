@@ -12,6 +12,7 @@ import labs.secondSemester.commons.network.Serializer;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -98,8 +99,8 @@ public class Client {
                 continue;
             }
 
-            ByteBuffer responseBuffer = ByteBuffer.allocate(10000);
-            Response response = receive(responseBuffer);
+//            ByteBuffer responseBuffer = ByteBuffer.allocate(10000);
+            Response response = receive(buffer);
             for (String element: response.getResponse()){
                 System.out.println(element);
             }
@@ -143,6 +144,43 @@ public class Client {
             while (!serverAddress.equals(address)) {
                 buffer.clear();
                 address = datagramChannel.receive(buffer);
+
+
+                datagramChannel.receive(buffer);
+                Packet packet = serializer.deserialize(buffer.array());
+                Header header = packet.getHeader();
+                int countOfPieces = header.getCount();
+                ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+                list.add(header.getNumber(), packet);
+                int k = 1;
+
+                Thread.sleep(100);
+
+                while (k<countOfPieces){
+                    SocketAddress socket = datagramChannel.receive(buffer);
+                    Thread.sleep(100);
+//                    if (socket==null) { Thread.sleep(100); continue; };
+                    Packet newPacket = serializer.deserialize(buffer.array());
+                    Header newHeader = newPacket.getHeader();
+                    list.add(newHeader.getNumber(), newPacket);
+                    k += 1;
+                }
+
+                int buffLength = 0;
+                for (int i = 0; i < countOfPieces; i++) {
+                    buffLength += list.get(i).getPieceOfBuffer().length;
+                }
+                try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream(buffLength)) {
+                    for (int i = 0; i < countOfPieces; i++) {
+                        byteStream.write(list.get(i).getPieceOfBuffer());
+                    }
+                    return serializer.deserialize(byteStream.toByteArray());
+                } catch (Exception e){
+                    System.out.println(e.getMessage());
+                    return null;
+                }
+
+
             }
 
             return serializer.deserialize(buffer.array());

@@ -113,7 +113,7 @@ public class Server {
             k += 1;
         }
 
-        int buffLength=0;
+        int buffLength = 0;
         for (int i = 0; i < countOfPieces; i++) {
             buffLength += list.get(i).getPieceOfBuffer().length;
         }
