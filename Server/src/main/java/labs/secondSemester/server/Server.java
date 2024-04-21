@@ -2,21 +2,28 @@ package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
+import labs.secondSemester.commons.network.Header;
+import labs.secondSemester.commons.network.Packet;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 public class Server {
     private final int PORT = 2224;
     private final DatagramSocket datagramSocket;
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
+    private final int BUFFER_LENGTH = 10240;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
@@ -47,21 +54,53 @@ public class Server {
                 logger.error(e.getMessage());
             } finally {
                 logger.info("Отправка ответа.");
-                sendResponce(response, datagramPacket.getSocketAddress());
+                sendResponse(response, datagramPacket.getSocketAddress());
             }
         }
     }
 
-    public void sendResponce(Response response, SocketAddress address) throws IOException {
+    public void sendResponse(Response response, SocketAddress address) throws IOException {
         byte[] array = serializer.serialize(response);
+
         DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
         datagramSocket.send(datagramPacket2);
     }
 
+
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
         datagramSocket.receive(datagramPacket);
-        return serializer.deserialize(buffer);
+        Packet packet = serializer.deserialize(buffer);
+        Header header = packet.getHeader();
+        int countOfPieces = header.getCount();
+        ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+        list.add(header.getNumber(), packet);
+        int lengthOfBytes = packet.getPieceOfBuffer().length;
+        int k = 1;
+
+        while (k<countOfPieces){
+            datagramSocket.receive(datagramPacket);
+            Packet newPacket = serializer.deserialize(buffer);
+            Header newHeader = packet.getHeader();
+            list.add(newHeader.getNumber(), newPacket);
+            k += 1;
+            //как-то нужно сделать так, что если мы слишком долго ждем, лавочка сама прикрывалась
+        }
+
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
+            for (int i = 0; i < countOfPieces; i++) {
+                byteStream.write(list.get(i).getPieceOfBuffer(), i * lengthOfBytes, lengthOfBytes);
+            }
+            return serializer.deserialize(byteStream.toByteArray());
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
+
+//    public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
+//        datagramSocket.receive(datagramPacket);
+//        return serializer.deserialize(buffer);
+//    }
 
 
 }

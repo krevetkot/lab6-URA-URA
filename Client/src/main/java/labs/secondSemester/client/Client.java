@@ -5,6 +5,8 @@ import labs.secondSemester.commons.commands.Exit;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
+import labs.secondSemester.commons.network.Header;
+import labs.secondSemester.commons.network.Packet;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
 import labs.secondSemester.commons.objects.Dragon;
@@ -17,16 +19,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class Client {
     private final DatagramChannel datagramChannel;
-    private final InetSocketAddress serverAddress;
+    private InetSocketAddress serverAddress;
     private Selector selector;
     private final Serializer serializer;
     private final FileManager fileManager;
+    private final String ip;
+    private final int BUFFER_LENGTH = 10240;
 
     {
         selector = Selector.open();
@@ -36,22 +39,34 @@ public class Client {
     }
 
     public Client (String ip) throws IOException {
-        serverAddress = new InetSocketAddress(ip, 2224);
+
         fileManager = new FileManager(this);
+        this.ip = ip;
+    }
+
+    public void connectServer(int connectionTries){
+        try {
+            serverAddress = new InetSocketAddress(ip, 2224);
+            datagramChannel.configureBlocking(false);
+            datagramChannel.register(selector, SelectionKey.OP_READ);
+            System.out.println("Подключение к серверу налажено.");
+        } catch (IOException e){
+            connectionTries += 1;
+            if (connectionTries<3){
+                System.out.println("Переподключаемся...");
+                connectServer(connectionTries);
+            } else {
+                System.out.println("Кажется, барахлит подключение к серверу. Попробуйте позже.");
+                System.exit(0);
+            }
+        }
     }
 
 
     public void start() {
 
+        connectServer(0);
         ByteBuffer buffer = ByteBuffer.allocate(10240);
-        try {
-            datagramChannel.configureBlocking(false);
-            datagramChannel.register(selector, SelectionKey.OP_READ);
-            System.out.println("Подключение к серверу налажено.");
-        } catch (IOException e){
-            System.out.println("Кажется, барахлит подключение к серверу. Попробуйте позже.");
-            System.exit(0);
-        }
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
         CommandFactory commandFactory = new CommandFactory();
@@ -72,7 +87,7 @@ public class Client {
 
             try {
                 Command command = commandFactory.buildCommand(request);
-                if (command.getClass().equals(Add.class) || command.getClass().equals(InsertAt.class) || command.getClass().equals(Update.class)){
+                if (command instanceof Add || command instanceof InsertAt || command instanceof Update){
                     DragonForm newDragon = new DragonForm();
                     try {
                         Dragon buildedDragon = newDragon.build(scanner, false);
@@ -82,11 +97,11 @@ public class Client {
                     }
                 }
 
-                if (command.getClass().equals(Exit.class)){
+                if (command instanceof Exit){
                     command.execute(null, false, null);
 
                 }
-                if (command.getClass().equals(ExecuteFile.class)){
+                if (command instanceof ExecuteFile){
                     assert request != null;
                     fileManager.executeFile(request.trim().split(" ")[1]);
                     continue;
@@ -107,14 +122,40 @@ public class Client {
 
     }
 
+
+//    public void send(Command command){
+//        try {
+//            datagramChannel.send(ByteBuffer.wrap(serializer.serialize(command)), serverAddress);
+//        }
+//        catch (IOException e){
+//            System.out.println(e.getMessage());
+//        }
+//    }
+
+
     public void send(Command command){
         try {
-            datagramChannel.send(ByteBuffer.wrap(serializer.serialize(command)), serverAddress);
+            byte[] buffer = serializer.serialize(command);
+            int bufferLength = buffer.length;
+            int countOfPieces = bufferLength/BUFFER_LENGTH-100;
+            if (countOfPieces*BUFFER_LENGTH<bufferLength){
+                countOfPieces += 1;
+            }
+            for (int i=0; i<countOfPieces; i++){
+                Header header = new Header(countOfPieces, i);
+                int headerLength = serializer.serialize(header).length;
+                System.out.println(headerLength);
+                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), (i+1)*(BUFFER_LENGTH-headerLength)));
+                datagramChannel.send(ByteBuffer.wrap(serializer.serialize(packet)), serverAddress);
+            }
+
         }
         catch (IOException e){
             System.out.println(e.getMessage());
         }
     }
+
+
 
     public Response receive(ByteBuffer buffer){
         buffer.clear();
