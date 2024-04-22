@@ -79,12 +79,11 @@ public class Server {
                 byte[] array = serializer.serialize(packet);
                 DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
                 datagramSocket.send(datagramPacket2);
-//                datagramChannel.send(ByteBuffer.wrap(serializer.serialize(packet)), serverAddress);
-
+                Thread.sleep(100);
             }
 
         }
-        catch (IOException e){
+        catch (IOException | InterruptedException e){
             System.out.println(e.getMessage());
         }
 

@@ -138,28 +138,27 @@ public class Client {
 
     public Response receive(ByteBuffer buffer){
         buffer.clear();
-        buffer.flip();
         try {
             SocketAddress address = null;
             while (!serverAddress.equals(address)) {
                 buffer.clear();
+                selector.select();
                 address = datagramChannel.receive(buffer);
-
 
                 datagramChannel.receive(buffer);
                 Packet packet = serializer.deserialize(buffer.array());
                 Header header = packet.getHeader();
                 int countOfPieces = header.getCount();
-                ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+                ArrayList<Packet> list = new ArrayList<>(3);
                 list.add(header.getNumber(), packet);
+                list.add(1, null);
                 int k = 1;
 
-                Thread.sleep(100);
-
                 while (k<countOfPieces){
+                    buffer.clear();
+                    if (selector.select()<0) continue;
+
                     SocketAddress socket = datagramChannel.receive(buffer);
-                    Thread.sleep(100);
-//                    if (socket==null) { Thread.sleep(100); continue; };
                     Packet newPacket = serializer.deserialize(buffer.array());
                     Header newHeader = newPacket.getHeader();
                     list.add(newHeader.getNumber(), newPacket);
@@ -179,8 +178,6 @@ public class Client {
                     System.out.println(e.getMessage());
                     return null;
                 }
-
-
             }
 
             return serializer.deserialize(buffer.array());
