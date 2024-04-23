@@ -51,7 +51,7 @@ public class Client {
 
     public void start() {
 
-        connectServer(0);
+        connectServer(1);
         ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
