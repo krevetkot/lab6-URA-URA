@@ -15,7 +15,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -86,12 +85,6 @@ public class Server {
         catch (IOException | InterruptedException e){
             System.out.println(e.getMessage());
         }
-
-
-//        byte[] array = serializer.serialize(response);
-//
-//        DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
-//        datagramSocket.send(datagramPacket2);
     }
 
 
