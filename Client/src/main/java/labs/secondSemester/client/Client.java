@@ -10,7 +10,6 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
