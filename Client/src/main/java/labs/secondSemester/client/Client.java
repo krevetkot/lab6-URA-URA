@@ -4,10 +4,7 @@ import labs.secondSemester.commons.commands.*;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
-import labs.secondSemester.commons.network.Header;
-import labs.secondSemester.commons.network.Packet;
-import labs.secondSemester.commons.network.Response;
-import labs.secondSemester.commons.network.Serializer;
+import labs.secondSemester.commons.network.*;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 import java.io.ByteArrayOutputStream;
@@ -32,6 +29,7 @@ public class Client {
     private final FileManager fileManager;
     private final String ip;
     private final int BUFFER_LENGTH = 1000;
+    private ClientIdentification clientID;
 
     {
         selector = Selector.open();
@@ -51,16 +49,18 @@ public class Client {
 
         connectServer(1);
         ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
-        System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
         CommandFactory commandFactory = new CommandFactory();
         while (true) {
 
             String request = null;
-            Scanner scanner = null;
+            Scanner scanner = new Scanner(System.in);
+            singIn(scanner);
+            //нужна какая-то проверка, что такой чел есть, но ее позже
+            System.out.println(clientID.getLogin() + ", приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
             try {
-                scanner = new Scanner(System.in);
+//                scanner = new Scanner(System.in);
                 request = scanner.nextLine();
             } catch (NoSuchElementException e1) {
                 System.out.println("До свидания! Приходите еще :)");
@@ -103,6 +103,26 @@ public class Client {
                 System.out.println(element);
             }
         }
+    }
+
+    public void singIn(Scanner scanner){
+        System.out.println("Введите имя пользователя: ");
+        String login;
+        while (true) {
+            login = scanner.nextLine().trim();
+            if (login.isBlank()) {
+                System.out.println("Имя пользователя не может быть пустым! Попробуйте еще раз.");
+            } else break;
+        }
+        System.out.println("Введите пароль: ");
+        String password;
+        while (true) {
+            password = scanner.nextLine().trim();
+            if (password.isBlank()) {
+                System.out.println("Пароль не может быть пустым! Попробуйте еще раз.");
+            } else break;
+        }
+        clientID = new ClientIdentification(login, password);
     }
 
 
